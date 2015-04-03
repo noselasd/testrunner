@@ -65,6 +65,22 @@ class TestFailure(object):
     def __repr__(self):
         return str(self)
 
+class MultiDelegate(object):
+
+    def __init__(self):
+        self.delegates = []
+
+    def __getattr__(self, name):
+        def handler(*args, **kwargs):
+            for d in self.delegates:
+                method = getattr(d, name)
+                method(*args, **kwargs)
+
+        return handler
+                
+
+
+
 class TerminalLog(object):
     GREEN = '\033[92m'
     RED   = '\033[91m'
@@ -89,10 +105,6 @@ class TerminalLog(object):
 
 ''' % (str(datetime.datetime.now())))
 
-    def write(self, msg):
-        self.out.write(msg)
-        self.out.flush()
-
     def start_test(self, test):
         self.out.write('  %-70s' % test.name)
         self.out.flush()
@@ -110,6 +122,8 @@ class TerminalLog(object):
             for err in self.errors:
                 self.out.write('\n%s\n' % err)
 
+        self.out.flush()
+
 
     def end(self, num_tests, num_failures):
         self.out.write('\n')
@@ -119,13 +133,14 @@ class TerminalLog(object):
         else:
             self.out.write(self.maybe_color("All %d tests passed\n" % 
                                          num_tests, self.GREEN))
+        self.out.flush()
+
 
 class TextLog(object):
     def __init__(self, logfile_name, verbose = False):
         self.out = open(logfile_name, 'w')
         self.logfile_name = logfile_name
         self.verbose = verbose
-        self.tlog = TerminalLog(verbose = verbose)
 
     def begin(self):
         self.out.write(
@@ -133,12 +148,10 @@ class TextLog(object):
 ## Time: %s
 
 ''' % (str(datetime.datetime.now())))
-        self.tlog.begin()
 
     def start_test(self, test):
         self.out.write('\n## Test: %s\n' % test.name)
         self.out.write('## Command: %s\n' % test.cmd)
-        self.tlog.start_test(test)
         pass
 
     def end_test(self, test):
@@ -149,17 +162,14 @@ class TextLog(object):
         for err in test.errors:
             self.out.write('\n%s\n' % err)
 
-        self.tlog.end_test(test)
 
     def end(self, num_tests, num_failures):
         self.out.write('\n')
         if num_failures:
-            self.tlog.write('\nSee the %s file for detailed log' % self.logfile_name)
             self.out.write("%d of %d tests failed\n" % (num_failures, num_tests))
         else:
             self.out.write("All %d tests passed\n" % num_tests)
 
-        self.tlog.end(num_tests, num_failures)
         self.out.close()
 
 class Test(object):
@@ -362,7 +372,9 @@ def main():
                          '\n'.join(args) + '\n')
         return 1
 
-    log = TextLog(LOGFILE, options.verbose)
+    log = MultiDelegate()
+    log.delegates.append(TextLog(LOGFILE, options.verbose))
+    log.delegates.append(TerminalLog(verbose=options.verbose))
     (total, failed) = run_tests(log, errexit=options.errexit)
 
     if options.exit_success or failed == 0:
