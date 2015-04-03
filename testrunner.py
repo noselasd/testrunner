@@ -119,8 +119,8 @@ class TerminalLog(object):
 
         self.out.write('%s\n' % s)
         if self.verbose:
-            for err in self.errors:
-                self.out.write('\n%s\n' % err)
+            for err in test.errors:
+                self.out.write('\n%s\n\n' % err)
 
         self.out.flush()
 
