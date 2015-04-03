@@ -1,0 +1,4 @@
+DefTest('/bin/false', 'true_test')
+DefTest('sleep 10', 'sleep_test', timeout=1)
+DefTest('echo Hello There', 'there_test' )
+DefTest('>&2 echo Hello stderr', 'stderr_test' )

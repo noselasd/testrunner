@@ -1,0 +1,3 @@
+DefTest('/bin/true', 'true_test')
+DefTest('sleep 2', 'sleep_test')
+DefTest('echo Hello World', 'hello_test')
