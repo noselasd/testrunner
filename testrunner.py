@@ -70,8 +70,11 @@ class TerminalLog(object):
     RED   = '\033[91m'
     ENDC  = '\033[0m'
     
-    def __init__(self):
-        self.colorize = sys.stdout.isatty()
+    def __init__(self, out = sys.stdout, verbose=False):
+        self.out = out
+        self.verbose = verbose
+        self.colorize = out.isatty()
+
 
     def maybe_color(self, s, color):
         if self.colorize:
@@ -80,15 +83,19 @@ class TerminalLog(object):
             return s
 
     def begin(self):
-        pass
+        self.out.write(
+'''## Testsuite started
+## Time: %s
+
+''' % (str(datetime.datetime.now())))
 
     def write(self, msg):
-        sys.stdout.write(msg)
-        sys.stdout.flush()
+        self.out.write(msg)
+        self.out.flush()
 
     def start_test(self, test):
-        sys.stdout.write('  %-70s' % test.name)
-        sys.stdout.flush()
+        self.out.write('  %-70s' % test.name)
+        self.out.flush()
 
     def end_test(self, test):
         if test.result == TestResult.PASS():
@@ -98,59 +105,62 @@ class TerminalLog(object):
         else:
             s = self.maybe_color(str(test.result), self.RED)
 
-        sys.stdout.write('%s\n' % s)
+        self.out.write('%s\n' % s)
+        if self.verbose:
+            for err in self.errors:
+                self.out.write('\n%s\n' % err)
+
 
     def end(self, num_tests, num_failures):
-        sys.stdout.write('\n')
+        self.out.write('\n')
         if num_failures:
-            sys.stdout.write(self.maybe_color("%d of %d tests failed\n" % 
+            self.out.write(self.maybe_color("%d of %d tests failed\n" % 
                                          (num_failures, num_tests), self.RED))
         else:
-            sys.stdout.write(self.maybe_color("All %d tests passed\n" % 
+            self.out.write(self.maybe_color("All %d tests passed\n" % 
                                          num_tests, self.GREEN))
 
 class TextLog(object):
-    def __init__(self, logfile_name):
-        self.logfile = open(logfile_name, 'w')
+    def __init__(self, logfile_name, verbose = False):
+        self.out = open(logfile_name, 'w')
         self.logfile_name = logfile_name
-        self.tlog = TerminalLog()
+        self.verbose = verbose
+        self.tlog = TerminalLog(verbose = verbose)
 
     def begin(self):
-        
-        sys.stdout.write(
+        self.out.write(
 '''## Testsuite started
 ## Time: %s
 
 ''' % (str(datetime.datetime.now())))
         self.tlog.begin()
-        pass
 
     def start_test(self, test):
-        self.logfile.write('\n## Test: %s\n' % test.name)
-        self.logfile.write('## Command: %s\n' % test.cmd)
+        self.out.write('\n## Test: %s\n' % test.name)
+        self.out.write('## Command: %s\n' % test.cmd)
         self.tlog.start_test(test)
         pass
 
     def end_test(self, test):
-        self.logfile.write('## Result: %s\n' % test.result)
+        self.out.write('## Result: %s\n' % test.result)
 
         if test.errors:
-            self.logfile.write('## %s failures:\n' % str(test))
+            self.out.write('## %s failures:\n' % str(test))
         for err in test.errors:
-            self.logfile.write('\n%s\n' % err)
+            self.out.write('\n%s\n' % err)
 
         self.tlog.end_test(test)
 
     def end(self, num_tests, num_failures):
-        self.logfile.write('\n')
+        self.out.write('\n')
         if num_failures:
             self.tlog.write('\nSee the %s file for detailed log' % self.logfile_name)
-            self.logfile.write("%d of %d tests failed\n" % (num_failures, num_tests))
+            self.out.write("%d of %d tests failed\n" % (num_failures, num_tests))
         else:
-            self.logfile.write("All %d tests passed\n" % num_tests)
+            self.out.write("All %d tests passed\n" % num_tests)
 
         self.tlog.end(num_tests, num_failures)
-        self.logfile.close()
+        self.out.close()
 
 class Test(object):
 
@@ -200,7 +210,7 @@ class Test(object):
                                            stderr=stderr,
                                            cwd=self.cwd
                                            )
-                (timedout, exitcode) = wait_test(process, self.timeout)
+                (timedout, exitcode) = wait_process(process, self.timeout)
 
 
         self.result = TestResult.PASS()
@@ -256,7 +266,7 @@ def diff(orig, new, out):
     with open(out, 'r') as diff_result:
         return diff_result.read()
 
-def wait_test(process, timeout):
+def wait_process(process, timeout):
     start = datetime.datetime.now()
 
     # We do polling for now, until a better approach comes about
@@ -352,8 +362,8 @@ def main():
                          '\n'.join(args) + '\n')
         return 1
 
-    log = TextLog(LOGFILE)
-    (total, failed) = run_tests(log, verbose=options.verbose, errexit=options.errexit)
+    log = TextLog(LOGFILE, options.verbose)
+    (total, failed) = run_tests(log, errexit=options.errexit)
 
     if options.exit_success or failed == 0:
         return 0
