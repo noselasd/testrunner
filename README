@@ -1,0 +1,155 @@
+testrunner(1)
+============
+:doctype manpage
+
+NAME
+----
+testrunner - test harness driver for software development testing
+
+SYNOPSIS
+--------
+testrunner [options] testsuite1 testsuite2 ...
+
+DESCRIPTION
+-----------
+The testrunner(1) command reads test commands from the given testsuite
+files, executes the tests and reports the test results.
+
+OPTIONS
+-------
+*-x,--exit_success
+    Make the testrunner(1) command always exit with success (exit code 0).
+    Otherwise testrunner(1) exits with success if all the tests passes or
+    exit with an error if any of the tests fails.
+
+*-c.--clean
+    Clean any output artifacts left by the tests. The tests are not executed.
+    This is indtended to be used in a build system, e.g. as part of a 'clean'
+    target.
+
+*-e,--errexit
+    Terminate on the first test that fails
+
+*-v,--verbose
+    Produce more verbose output. This e.g. shows the reason and output
+    difference for tests that fails.
+
+OVERVIEW
+--------
+The testrunner(1) is a test harness that executes commands/executables,
+compares the output of the command with the desired output, and fails
+or passes the test depending on whether the actual output matches the
+desired output.
+
+The intended use of testrunner(1) is that developers write test programs
+that exercise the code being tested as normal executables that produces 
+text output.
+Whether the test cases being executed are unit tests, or larger integration 
+tests is up to the developer writing the tests.
+
+Test results are printed out as the tests are being run, as well as saved
+to a testsuite.log file.
+
+While testrunner(1) was written to test C and C++ code, code written in 
+any language can be tested as long as the tests can be executed as normal 
+executables/commands and they write output to stdout or stderr.
+
+The following criterias are used to fail or pass a test:
+
+* Whether stdout of the executable matches the desired stdout output
+* Whether stderr of the executable matches the desired stderr output
+* Whether the exit code of the executable is any of the 
+  desired exit codes, 0 by default.
+* Whether the test command completes within the desired time period, 
+  30 seconds by default.
+ 
+
+DEFINING TEST CASES
+-------------------
+Testcases are loaded from the testsuite files given as arguments to
+testrunner(1). Several test cases can be defined in each testsuite file.
+
+The testsuite files are run as Python code, so the full python programming
+environment is available in the testsuite files. However little to no  
+Python programming skills are needed to define test cases.
+
+In the testsuite files a test case is defined by the syntax of:
+
+    DefTest('command', 'test_name')
+
+**command** is the executable command to run, optionally with arguments. The
+command is being run within a shell as /bin/sh -c 'command' , so full shell
+syntax is available. However do note that only the exit status of the last 
+command, if e.g. a pipeline is used as a command, is used for reporting back
+the exit status to the testrunner(1)
+
+**test_name** is the name of the test, used in test reports and for the filenames
+of the desired output. As the test_name also names filenames, it's desirable
+if it does not contain spaces, directory separator or other characthers that
+makes file handling difficult. The test_name must be unique within all the
+testsuites being run.
+
+e.g
+
+    DefTest('echo Hello', 'hello_test')
+
+This defines one test with the name hello_test that will run the 
+command echo hello.
+
+In addition to the test definition here, a file named
+hello_test.stdout and hello_test.stderr should be created that contains the 
+desired stdout and stderr output of running echo hello.
+
+In our hello_test case, the hello_test.stdout would contain the text
+
+    Hello
+
+As that is what we expect the test to output. hello_test.stderr can be omitted
+as we do not expect it to produce any output on stderr.
+
+
+MORE TEST CASE OPTIONS
+----------------------
+The DefTest() statement is just a Python function call, and it can take a few
+optional parameters in addition to the mandatory parameters described in 
+the previous chapter.
+
+    DefTest('command', 'test_name', success_codes=[0], timeout=30)
+
+**success_codes** is a list of exit codes of the command that will be treated
+as a success. By default if the command exits with anything other than 
+an exit code of 0, the test will be marked as failed. If e.g. an exit 
+code of either 0 or 1 should indicate success, pass in 
+
+    success_codes=[0,1]
+
+If an empty list, success_codes=[], is given, the exit code will be ignored
+alltogether when determining if the test case fails or succeeds.
+
+**timeout** is the max time in seconds the test case can run. If this timeout 
+is reached, the command will be killed and the test case is marked as failed.
+
+FILE LOCATIONS
+--------------
+The files used by testrunner(1) 
+* The testsuite files containing test case 
+* The command to be run
+* The .stdout and .stderr files for each test case.
+
+The command is being run with the same working directory as the testsuite
+files, and the matching .stdout/.stderr files for each test case are read
+from the same directory as the testsuite files.
+
+EXAMPLES
+--------
+See the tests/ directory for some simple examples. These tests
+can be run with:
+
+    ./testrunner.py tests/testsuite_failures tests/testsuite_success
+
+In the c_example/ directory is a small C code project that uses testrunner(1)
+for testing. These tests can be compiled and run with:
+
+    cd c_example && make check
+
+
