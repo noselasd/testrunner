@@ -349,16 +349,23 @@ def main():
                       help='Clean any output artifacts left by the tests')
     parser.add_option('-l', '--list',
                       action='store_true', dest='list', default=False,
-                      help='describes all the tests')
+                      help='Describes all the tests')
     parser.add_option('-e', '--errexit',
                       action='store_true', dest='errexit', default=False,
                       help='Stop on the first test that fails')
+    parser.add_option('-f', '--logfile',
+                      action='store', dest='logfile', 
+                      help='Name of the output log file')
 
     (options, args) =  parser.parse_args()
     if not args:
         sys.stdout.write('Error: No test files given\n')
         parser.print_help()
         return 1
+
+    if options.logfile:
+        global LOGFILE
+        LOGFILE = options.logfile
 
     for testfile in args:
         execpyfile(testfile)
