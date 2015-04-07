@@ -333,6 +333,16 @@ def clean():
     for test in ALL_TESTS:
         test.cleanup()
 
+def list_tests():
+    if not ALL_TESTS:
+        sys.stdout.write('No tests found\n')
+    else:
+        sys.stdout.write('Available tests:\n')
+
+        for test in ALL_TESTS:
+            sys.stdout.write(test.name + '\n')    
+
+
 def main():
     parser = optparse.OptionParser(usage='usage: %prog [options] test1 ...', 
                                    version=VERSION)
@@ -348,7 +358,7 @@ def main():
                       action='store_true', dest='clean', default=False,
                       help='Clean any output artifacts left by the tests')
     parser.add_option('-l', '--list',
-                      action='store_true', dest='list', default=False,
+                      action='store_true', dest='list_tests', default=False,
                       help='Describes all the tests')
     parser.add_option('-e', '--errexit',
                       action='store_true', dest='errexit', default=False,
@@ -372,6 +382,10 @@ def main():
 
     if options.clean:
         clean()
+        return 0
+
+    if options.list_tests:
+        list_tests()
         return 0
 
     if not ALL_TESTS:
