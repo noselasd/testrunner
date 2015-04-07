@@ -148,8 +148,9 @@ class TextLog(object):
         self.out.write(
 '''## Testsuite started
 ## Time: %s
+## Invocation: %s
 
-''' % (str(datetime.datetime.now())))
+''' % (str(datetime.datetime.now()), ' '.join(sys.argv)))
 
     def start_test(self, test):
         self.out.write('\n## Test: %s\n' % test.name)
