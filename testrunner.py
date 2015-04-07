@@ -343,7 +343,7 @@ def list_tests():
     else:
         sys.stdout.write('Available tests:\n')
 
-        for test in ALL_TESTS:
+        for test in sorted(ALL_TESTS, key=lambda x: x.name):
             sys.stdout.write(test.name + '\n')    
 
 def filter_tests(keywords):
