@@ -287,7 +287,7 @@ def wait_process(proc, timeout):
 def diff(orig, new, out):
     cmd = ['diff', '-u', orig, new]
     with open(out, 'w') as stdout:
-        exitcode = subprocess.call(cmd, stdout=stdout)
+        exitcode = subprocess.call(cmd, stdout=stdout, stderr=stdout)
         if exitcode not in [0, 1]: #diff itself failed
             raise RuntimeError('Failed(exitcode=%d: %s ' % 
                             (exitcode, str(cmd)))
