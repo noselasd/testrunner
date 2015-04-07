@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import re
 import subprocess
 import os
 import time
@@ -342,6 +343,15 @@ def list_tests():
         for test in ALL_TESTS:
             sys.stdout.write(test.name + '\n')    
 
+def filter_tests(keywords):
+    global ALL_TESTS
+
+    filtered_tests = []
+    for include in keywords:
+        r = re.compile(include)
+        filtered_tests += [t for t in ALL_TESTS if r.search(t.name)]
+
+    ALL_TESTS = filtered_tests
 
 def main():
     parser = optparse.OptionParser(usage='usage: %prog [options] test1 ...', 
@@ -366,6 +376,10 @@ def main():
     parser.add_option('-f', '--logfile',
                       action='store', dest='logfile', 
                       help='Name of the output log file')
+    parser.add_option('-k', '--keyword',
+                      action='append', dest='keyword', default=[],
+                      help='Run only tests matching the given keyword. ' +
+                           'KEYWORD is a regexp. Can be given multiple times.')
 
     (options, args) =  parser.parse_args()
     if not args:
@@ -379,6 +393,9 @@ def main():
 
     for testfile in args:
         execpyfile(testfile)
+    
+    if options.keyword:
+        filter_tests(options.keyword)
 
     if options.clean:
         clean()
