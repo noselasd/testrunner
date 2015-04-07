@@ -8,6 +8,7 @@ import signal
 import optparse
 import datetime
 import inspect
+import threading
 
 VERSION='0.0.1'
 ALL_TESTS=[]
@@ -222,8 +223,6 @@ class Test(object):
                                            cwd=self.cwd
                                            )
                 (timedout, exitcode) = wait_process(process, self.timeout)
-
-
         self.result = TestResult.PASS()
 
         if timedout:
@@ -267,6 +266,24 @@ class Test(object):
         silentremove(test.stderr_diff_name)
 
 
+def wait_process(proc, timeout):
+    proc_thread = threading.Thread(target=proc.communicate)
+    proc_thread.start()
+    proc_thread.join(timeout=timeout)
+
+    if proc_thread.is_alive():
+        try:
+            proc.kill()
+            return (True, -1)
+
+        except OSError:
+            #This takes care of most of the races between
+            #is_alive and kill. Though they don't matter much
+            #for our cases where the timeout should just be a guard
+            pass
+
+    return (False, proc.returncode)
+
 def diff(orig, new, out):
     cmd = ['diff', '-u', orig, new]
     with open(out, 'w') as stdout:
@@ -276,20 +293,6 @@ def diff(orig, new, out):
                             (exitcode, str(cmd)))
     with open(out, 'r') as diff_result:
         return diff_result.read()
-
-def wait_process(process, timeout):
-    start = datetime.datetime.now()
-
-    # We do polling for now, until a better approach comes about
-    while process.poll() is None:
-        time.sleep(0.001)
-        now = datetime.datetime.now()
-        if (now - start).seconds >= timeout:
-            os.kill(process.pid, signal.SIGKILL)
-            os.waitpid(process.pid, 0)
-            return (True, 0)
-
-    return (False, process.returncode)
 
 def run_tests(log, verbose=False, errexit=False):
     num_tests = 0
