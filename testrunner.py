@@ -35,7 +35,7 @@ def DefTest(cmd, name, success_codes=[0], timeout=30):
                      'filename': inspect.getfile(frame[0]),
                      'lineno':   frame[0].f_lineno
                     }
-    t = Test(test_location, cmd, name, CURRENT_SUITE, success_codes, timeout)
+    t = TestCase(test_location, cmd, name, CURRENT_SUITE, success_codes, timeout)
     ALL_TESTS.append(t)
 
 class SimpleEnum(object):
@@ -172,6 +172,8 @@ class TextLog(object):
         for err in test.errors:
             self.out.write('\n%s\n' % err)
 
+        self.out.flush()
+
 
     def end(self, num_tests, num_failures):
         self.out.write('\n')
@@ -182,7 +184,7 @@ class TextLog(object):
 
         self.out.close()
 
-class Test(object):
+class TestCase(object):
 
     def __init__(self, location, cmd,  name, suite, success_codes, timeout):
         self.location      = location
@@ -355,9 +357,14 @@ def list_tests():
         sys.stdout.write('No tests found\n')
     else:
         sys.stdout.write('Available tests:\n')
+        l = max([len(t.suite) for t in ALL_TESTS]) + 1
 
-        for test in sorted(ALL_TESTS, key=lambda x: x.name):
-            sys.stdout.write(test.name + '\n')    
+        sys.stdout.write('%-*s Name\n' % (l, "Suite"))
+        sys.stdout.write('%s\n' % ('-' * (l + 5)))
+
+        for test in ALL_TESTS:
+            sys.stdout.write('%-*s %s\n' % (l, test.suite, test.name))
+        sys.stdout.flush()
 
 def filter_tests(keywords):
     global ALL_TESTS
