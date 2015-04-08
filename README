@@ -12,34 +12,42 @@ testrunner [options] testsuite1 testsuite2 ...
 
 DESCRIPTION
 -----------
-The testrunner(1) command reads test commands from the given testsuite
+The testrunner(1) command reads test definitions from the given testsuite
 files, executes the tests and reports the test results.
 
 OPTIONS
 -------
-*-x,--exit_success
+*-x,--exit_success*
     Make the testrunner(1) command always exit with success (exit code 0).
     Otherwise testrunner(1) exits with success if all the tests passes or
     exit with an error if any of the tests fails.
 
-*-c.--clean
+*-c.--clean*
     Clean any output artifacts left by the tests. The tests are not executed.
     This is indtended to be used in a build system, e.g. as part of a 'clean'
     target.
 
-*-e,--errexit
+*-e,--errexit*
     Terminate on the first test that fails
 
-*-v,--verbose
+*-v,--verbose*
     Produce more verbose output. This e.g. shows the reason and output
     difference for tests that fails.
+
+*-k,--keyword*
+    Run only tests names matching the given keyword. KEYWORD is a regular
+    expression. This flag can be given multiple times.
+
+*-l,--list*
+    List all the test cases present in the given testsuite definition files.
 
 OVERVIEW
 --------
 The testrunner(1) is a test harness that executes commands/executables,
-compares the output of the command with the desired output, and fails
-or passes the test depending on whether the actual output matches the
-desired output.
+compares the output of the command with the desired output. Test cases fail
+or passe depending on whether the actual output of the command matches 
+the desired output, and a report of all the test cases and their pass/fail
+status is produced.
 
 The intended use of testrunner(1) is that developers write test programs
 that exercise the code being tested as normal executables that produces 
@@ -66,14 +74,21 @@ The following criterias are used to fail or pass a test:
 
 DEFINING TEST CASES
 -------------------
-Testcases are loaded from the testsuite files given as arguments to
+Testcases are loaded from seperate testsuite files given as arguments to
 testrunner(1). Several test cases can be defined in each testsuite file.
+
+The output of the command from each test case will be compared with two 
+files matching the test name with the added .stdout and .stderr suffix.
+The test case output and the .stdout/.stderr files are assumed to be 
+plain text. In the normal case the test case would only write to its 
+stdout, leaving no output on its stderr, such that the corresponding
+.stderr file doesn't need to exist.
 
 The testsuite files are run as Python code, so the full python programming
 environment is available in the testsuite files. However little to no  
-Python programming skills are needed to define test cases.
+Python programming knowledgr is needed to define test cases.
 
-In the testsuite files a test case is defined by the syntax of:
+In the testsuite files a test case is defined with the syntax of:
 
     DefTest('command', 'test_name')
 
@@ -81,7 +96,7 @@ In the testsuite files a test case is defined by the syntax of:
 command is being run within a shell as /bin/sh -c 'command' , so full shell
 syntax is available. However do note that only the exit status of the last 
 command, if e.g. a pipeline is used as a command, is used for reporting back
-the exit status to the testrunner(1)
+the exit status to testrunner(1)
 
 **test_name** is the name of the test, used in test reports and for the filenames
 of the desired output. As the test_name also names filenames, it's desirable
@@ -119,11 +134,9 @@ the previous chapter.
 **success_codes** is a list of exit codes of the command that will be treated
 as a success. By default if the command exits with anything other than 
 an exit code of 0, the test will be marked as failed. If e.g. an exit 
-code of either 0 or 1 should indicate success, pass in 
+code of either 0 or 1 should indicate success, pass in 'success_codes=[0,1]'
 
-    success_codes=[0,1]
-
-If an empty list, success_codes=[], is given, the exit code will be ignored
+If an empty list, 'success_codes=[]', is given, the exit code will be ignored
 alltogether when determining if the test case fails or succeeds.
 
 **timeout** is the max time in seconds the test case can run. If this timeout 
@@ -131,7 +144,8 @@ is reached, the command will be killed and the test case is marked as failed.
 
 FILE LOCATIONS
 --------------
-The files used by testrunner(1) 
+The files used by testrunner(1) are
+
 * The testsuite files containing test case 
 * The command to be run
 * The .stdout and .stderr files for each test case.
