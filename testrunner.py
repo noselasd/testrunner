@@ -17,11 +17,12 @@ CURRENT_SUITE='default'
 
 #See README for detailed info
 
-#Define a test - to be called in the testsuite files
-
+#Start a new test suite
 def DefSuite(suite):
+    global CURRENT_SUITE
     CURRENT_SUITE = suite
 
+#Define a test - to be called in the testsuite files
 def DefTest(cmd, name, success_codes=[0], timeout=30):
 
     if name in set(t.name for t in ALL_TESTS):
@@ -104,8 +105,11 @@ class TerminalLog(object):
         self.out.write(
 '''## Testsuite started
 ## Time: %s
-
 ''' % (str(datetime.datetime.now())))
+
+    def start_suite(self, suite):
+        self.out.write('\n## Running testsuite: %s\n' % suite)
+        self.out.flush()
 
     def start_test(self, test):
         self.out.write('  %-70s' % test.name)
@@ -149,8 +153,11 @@ class TextLog(object):
 '''## Testsuite started
 ## Time: %s
 ## Invocation: %s
-
 ''' % (str(datetime.datetime.now()), ' '.join(sys.argv)))
+
+    def start_suite(self, suite):
+        self.out.write('\n## Running testsuite: %s\n' % suite)
+        self.out.flush()
 
     def start_test(self, test):
         self.out.write('\n## Test: %s\n' % test.name)
@@ -298,11 +305,16 @@ def diff(orig, new, out):
 def run_tests(log, verbose=False, errexit=False):
     num_tests = 0
     num_failures = 0
+    current_suite = None
 
     log.begin()
 
     for test in ALL_TESTS:
         num_tests = num_tests + 1
+
+        if test.suite != current_suite:
+            log.start_suite(test.suite)
+            current_suite = test.suite
 
         log.start_test(test)
 
@@ -373,7 +385,7 @@ def main():
                       help='Clean any output artifacts left by the tests')
     parser.add_option('-l', '--list',
                       action='store_true', dest='list_tests', default=False,
-                      help='Describes all the tests')
+                      help='List all the test cases')
     parser.add_option('-e', '--errexit',
                       action='store_true', dest='errexit', default=False,
                       help='Stop on the first test that fails')

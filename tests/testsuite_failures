@@ -1,5 +1,9 @@
+DefSuite('Common tests')
+
 DefTest('/bin/false', 'false_test')
 DefTest('sleep 10', 'sleep_timeout_test', timeout=1)
 DefTest('echo Hello There', 'there_test' )
+
+DefSuite('Special tests')
 DefTest('>&2 echo Hello stderr', 'stderr_test' )
 DefTest('exit 10', 'err_exit_test' )
