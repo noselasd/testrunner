@@ -1,6 +1,6 @@
 DefSuite('Common tests')
 
-DefTest('/bin/false', 'false_test')
+DefTest('false', 'false_test')
 DefTest('sleep 10', 'sleep_timeout_test', timeout=1)
 DefTest('echo Hello There', 'there_test' )
 

@@ -1,4 +1,4 @@
-DefTest('/bin/true', 'true_test')
+DefTest('true', 'true_test')
 DefTest('sleep 2', 'sleep_test')
 DefTest('echo Hello World', 'hello_test')
 DefTest('exit 10', 'success_exit_test', success_codes=[10])
