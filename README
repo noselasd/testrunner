@@ -34,9 +34,14 @@ OPTIONS
     Produce more verbose output. This e.g. shows the reason and output
     difference for tests that fails.
 
-*-k,--keyword*
+*-k KEYWORD,--keyword=KEYWORD*
     Run only tests names matching the given keyword. KEYWORD is a regular
     expression. This flag can be given multiple times.
+
+*-s SUITE,--suite=SUITE*
+    Run only tests in the given suite . SUITE is a regular
+    expression. This flag can be given multiple times.
+
 
 *-l,--list*
     List all the test cases present in the given testsuite definition files.
@@ -122,6 +127,17 @@ In our hello_test case, the hello_test.stdout would contain the text
 As that is what we expect the test to output. hello_test.stderr can be omitted
 as we do not expect it to produce any output on stderr.
 
+The tests are also grouped in suites, and testrunner(1) can be instructed to
+only run a certain suite. If no test suites are defined, all test cases will
+belong to the test suite named 'default'.
+
+A test suite can be defined with the syntax:
+    
+    DefSuite('suite_name')
+
+**suite_name** is the name of the new suite. All the following test cases
+defined with the 'DefTest()' command will belong to this new test suite, until
+another 'DefSuite()' command is issued.
 
 MORE TEST CASE OPTIONS
 ----------------------
