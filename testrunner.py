@@ -367,13 +367,13 @@ def list_tests():
             sys.stdout.write('%-*s %s\n' % (l, test.suite, test.name))
         sys.stdout.flush()
 
-def filter_tests(keywords):
+def filter_tests(keywords, getter):
     global ALL_TESTS
 
     filtered_tests = []
     for include in keywords:
         r = re.compile(include)
-        filtered_tests += [t for t in ALL_TESTS if r.search(t.name)]
+        filtered_tests += [t for t in ALL_TESTS if r.search(getter(t))]
 
     ALL_TESTS = filtered_tests
 
@@ -404,6 +404,10 @@ def main():
                       action='append', dest='keyword', default=[],
                       help='Run only tests matching the given keyword. ' +
                            'KEYWORD is a regexp. Can be given multiple times.')
+    parser.add_option('-s', '--suite',
+                      action='append', dest='suite', default=[],
+                      help='Run only test suites matching the given suite. ' +
+                           'SUITE is a regexp. Can be given multiple times.')
 
     (options, args) =  parser.parse_args()
     if not args:
@@ -419,7 +423,10 @@ def main():
         execpyfile(testfile)
     
     if options.keyword:
-        filter_tests(options.keyword)
+        filter_tests(options.keyword, lambda t: t.name)
+
+    if options.suite:
+        filter_tests(options.suite, lambda t: t.suite)
 
     if options.clean:
         clean()
