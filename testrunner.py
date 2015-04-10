@@ -222,17 +222,22 @@ class TestCase(object):
                              self.filename,
                              self.lineno)
 
-    def run_test(self):
-        timedout = False
-        with open(self.stdout_run_name, 'wb') as stdout:
-            with open(self.stderr_run_name, 'wb') as stderr:
+    def execute_program(self, stdout_name, stderr_name):
+        with open(self.stdout_name, 'wb') as stdout:
+            with open(stderr_name, 'wb') as stderr:
                 process= subprocess.Popen(self.cmd, 
                                            shell=True,
                                            stdout=stdout,
                                            stderr=stderr,
                                            cwd=self.cwd
                                            )
-                (timedout, exitcode) = wait_process(process, self.timeout)
+                return wait_process(process, self.timeout)
+
+
+    def run_test(self):
+        timedout = False
+        (timedout, exitcode) = self.execute_program(self.stdout_run_name, 
+                                               self.stderr_run_name)
         self.result = TestResult.PASS()
 
         if timedout:
@@ -269,6 +274,14 @@ class TestCase(object):
 
         self.cleanup()
 
+    def generate(self):
+        self.execute_program(self.stdout_name, self.stderr_name)
+
+        if os.path.getsize(self.stdout_name) == 0:
+            silentremove(self.stdout_name)
+        if os.path.getsize(self.stderr_name) == 0:
+            silentremove(self.stderr_name)
+            
     def cleanup(test):
         silentremove(test.stdout_run_name)
         silentremove(test.stderr_run_name)
@@ -334,6 +347,22 @@ def run_tests(log, verbose=False, errexit=False):
     log.end(num_tests, num_failures)
 
     return num_tests, num_failures
+
+def generate_test_files(errexit=False):
+
+    num_failures = 0
+    for test in ALL_TESTS:
+        sys.stdout.write('Regenerating ' + test.name + '\n')
+        try: 
+            test.generate()
+        except Exception as e:
+            sys.stdout.write(str(e) + '\n')
+            num_failures += 1
+
+        if num_failures > 0 and errexit:
+            break
+
+    return num_failures == 0
     
 def execpyfile(filename):
     with open(filename) as f:
@@ -409,6 +438,12 @@ def main():
                       help='Run only test suites matching the given suite. ' +
                            'SUITE is a regexp. Can be given multiple times.')
 
+    parser.add_option('-g', '--generate',
+                      action='store_true', dest='generate', default=False,
+                      help='Run the defined test cases commands and generate ' +
+                            'the output files. Use with care, this overwrites ' +
+                            'existing output files')
+
     (options, args) =  parser.parse_args()
     if not args:
         sys.stdout.write('Error: No test files given\n')
@@ -441,12 +476,17 @@ def main():
                          '\n'.join(args) + '\n')
         return 1
 
-    log = MultiDelegate()
-    log.delegates.append(TextLog(LOGFILE, options.verbose))
-    log.delegates.append(TerminalLog(verbose=options.verbose))
-    (total, failed) = run_tests(log, errexit=options.errexit)
+    ok = False
+    if options.generate:
+        ok = generate_test_files(errexit=options.errexit)
+    else:
+        log = MultiDelegate()
+        log.delegates.append(TextLog(LOGFILE, options.verbose))
+        log.delegates.append(TerminalLog(verbose=options.verbose))
+        (total, failed) = run_tests(log, errexit=options.errexit)
+        ok = failed == 0
 
-    if options.exit_success or failed == 0:
+    if options.exit_success or ok:
         return 0
 
     return 1
