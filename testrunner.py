@@ -232,6 +232,11 @@ class TestCase(object):
             self.cleanup()
             return 
 
+        if self.success_codes and exitcode not in self.success_codes:
+            self.result = TestResult.FAIL()
+            self.errors.append(TestFailure(self, 
+                          'Terminated with unexpected exit code %d' % exitcode))
+
         #Now diff the stdout and stderr output
         stdout_name = self.stdout_name
         if not os.path.exists(stdout_name):
@@ -246,10 +251,6 @@ class TestCase(object):
         stderr_diff = diff(stderr_name, self.stderr_run_name, self.stderr_diff_name)
 
 
-        if self.success_codes and exitcode not in self.success_codes:
-            self.result = TestResult.FAIL()
-            self.errors.append(TestFailure(self, 
-                          'Terminated with unexpected exit code %d' % exitcode))
         if stdout_diff:
             self.result = TestResult.FAIL()
             self.errors.append(TestFailure(self, stdout_diff))
