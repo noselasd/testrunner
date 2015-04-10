@@ -42,9 +42,13 @@ OPTIONS
     Run only tests in the given suite . SUITE is a regular
     expression. This flag can be given multiple times.
 
-
 *-l,--list*
     List all the test cases present in the given testsuite definition files.
+
+*-g, --generate*
+    Run the defined test case commands and generate the output files. Use 
+    with care, this overwritesexisting output files
+
 
 OVERVIEW
 --------
@@ -157,6 +161,22 @@ alltogether when determining if the test case fails or succeeds.
 
 **timeout** is the max time in seconds the test case can run. If this timeout 
 is reached, the command will be killed and the test case is marked as failed.
+
+GENERATING INITIAL OUTPUT FILES
+-------------------------------
+In stead of performing the tests, testrunner(1) can run the commands defined 
+in the test cases and create the .stdout/.stderr files. This can be used to
+create the initial comparison files instead of generating them by hand and
+can be helpful to re-generate the files when the test programs change.
+
+The file generation mode is used when the -g or --generate flag is specifed.
+The flags for filtering tests or suites can be given to run only specific
+test commands. 
+
+Use this with care, as any existing .stdout/.stderr files will be overwritten.
+
+If any of the generated .stdout/.stderr files end up being empty, the files
+are removed.
 
 FILE LOCATIONS
 --------------
