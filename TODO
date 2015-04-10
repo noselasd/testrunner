@@ -2,4 +2,12 @@
 * Clean up code
 * Be able to run tests in parallell
 * Add the C example test code
+* Optionally Specify verbatim text to compare against for DefTest()
+  instead of using files 
+
+Non-todos:
+* Replace code using cleaner but newer Python features.
+  The testrunner needs to run on the default python package
+  shipped with RHEL/CentOS 6 and up.
+
 
