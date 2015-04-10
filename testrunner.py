@@ -28,13 +28,14 @@ def DefTest(cmd, name, success_codes=[0], timeout=30):
     if name in set(t.name for t in ALL_TESTS):
         raise NameError('The test name ''%s'' is already defined' % name)
 
+    #Figure out the file and line where the test is defined
     frame = inspect.stack()[1]
     cwd = os.path.dirname(inspect.getfile(frame[0])) or './'
-
     test_location = {'cwd':      cwd,
                      'filename': inspect.getfile(frame[0]),
                      'lineno':   frame[0].f_lineno
                     }
+
     t = TestCase(test_location, cmd, name, CURRENT_SUITE, success_codes, timeout)
     ALL_TESTS.append(t)
 
@@ -81,9 +82,6 @@ class MultiDelegate(object):
 
         return handler
                 
-
-
-
 class TerminalLog(object):
     GREEN = '\033[92m'
     RED   = '\033[91m'
@@ -93,7 +91,6 @@ class TerminalLog(object):
         self.out = out
         self.verbose = verbose
         self.colorize = out.isatty()
-
 
     def maybe_color(self, s, color):
         if self.colorize:
@@ -130,17 +127,15 @@ class TerminalLog(object):
 
         self.out.flush()
 
-
     def end(self, num_tests, num_failures):
         self.out.write('\n')
         if num_failures:
-            self.out.write(self.maybe_color("%d of %d tests failed\n" % 
+            self.out.write(self.maybe_color('%d of %d tests failed\n' % 
                                          (num_failures, num_tests), self.RED))
         else:
-            self.out.write(self.maybe_color("All %d tests passed\n" % 
+            self.out.write(self.maybe_color('All %d tests passed\n' % 
                                          num_tests, self.GREEN))
         self.out.flush()
-
 
 class TextLog(object):
     def __init__(self, logfile_name, verbose = False):
@@ -174,13 +169,12 @@ class TextLog(object):
 
         self.out.flush()
 
-
     def end(self, num_tests, num_failures):
         self.out.write('\n')
         if num_failures:
-            self.out.write("%d of %d tests failed\n" % (num_failures, num_tests))
+            self.out.write('%d of %d tests failed\n' % (num_failures, num_tests))
         else:
-            self.out.write("All %d tests passed\n" % num_tests)
+            self.out.write('All %d tests passed\n' % num_tests)
 
         self.out.close()
 
@@ -218,26 +212,18 @@ class TestCase(object):
         return self.location['lineno']
 
     def __str__(self):
-        return "%s at %s:%d" %(self.name,
+        return '%s at %s:%d' %(self.name,
                              self.filename,
                              self.lineno)
-
-    def execute_program(self, stdout_name, stderr_name):
-        with open(self.stdout_name, 'wb') as stdout:
-            with open(stderr_name, 'wb') as stderr:
-                process= subprocess.Popen(self.cmd, 
-                                           shell=True,
-                                           stdout=stdout,
-                                           stderr=stderr,
-                                           cwd=self.cwd
-                                           )
-                return wait_process(process, self.timeout)
 
 
     def run_test(self):
         timedout = False
-        (timedout, exitcode) = self.execute_program(self.stdout_run_name, 
-                                               self.stderr_run_name)
+        (timedout, exitcode) = execute_program(self.stdout_run_name, 
+                                               self.stderr_run_name,
+                                               self.cwd,
+                                               self.cmd,
+                                               self.timeout)
         self.result = TestResult.PASS()
 
         if timedout:
@@ -275,19 +261,33 @@ class TestCase(object):
         self.cleanup()
 
     def generate(self):
-        self.execute_program(self.stdout_name, self.stderr_name)
+        execute_program(self.stdout_run_name, 
+                        self.stderr_run_name,
+                        self.cwd,
+                        self.cmd,
+                        self.timeout)
 
         if os.path.getsize(self.stdout_name) == 0:
             silentremove(self.stdout_name)
         if os.path.getsize(self.stderr_name) == 0:
             silentremove(self.stderr_name)
             
-    def cleanup(test):
-        silentremove(test.stdout_run_name)
-        silentremove(test.stderr_run_name)
-        silentremove(test.stdout_diff_name)
-        silentremove(test.stderr_diff_name)
+    def cleanup(self):
+        silentremove(self.stdout_run_name)
+        silentremove(self.stderr_run_name)
+        silentremove(self.stdout_diff_name)
+        silentremove(self.stderr_diff_name)
 
+def execute_program(stdout_name, stderr_name, cwd, cmd, timeout):
+    with open(stdout_name, 'wb') as stdout:
+        with open(stderr_name, 'wb') as stderr:
+            process= subprocess.Popen(cmd, 
+                    shell=True,
+                    stdout=stdout,
+                    stderr=stderr,
+                    cwd=cwd
+                    )
+            return wait_process(process, timeout)
 
 def wait_process(proc, timeout):
     proc_thread = threading.Thread(target=proc.communicate)
@@ -322,11 +322,12 @@ def run_tests(log, verbose=False, errexit=False):
     num_tests = 0
     num_failures = 0
     current_suite = None
+    print "errexit", errexit
 
     log.begin()
 
     for test in ALL_TESTS:
-        num_tests = num_tests + 1
+        num_tests += 1
 
         if test.suite != current_suite:
             log.start_suite(test.suite)
@@ -336,7 +337,7 @@ def run_tests(log, verbose=False, errexit=False):
 
         test.run_test()
         if test.errors:
-            num_failures = num_failures + 1
+            num_failures += 1
 
         log.end_test(test)
 
@@ -352,11 +353,12 @@ def generate_test_files(errexit=False):
 
     num_failures = 0
     for test in ALL_TESTS:
-        sys.stdout.write('Regenerating ' + test.name + '\n')
+        sys.stdout.write('Regenerating %s with command: %s\n' % (test.name, 
+                                                               test.cmd))
         try: 
             test.generate()
         except Exception as e:
-            sys.stdout.write(str(e) + '\n')
+            sys.stdout.write('%s failed: %s\n' % (test.name, str(e)))
             num_failures += 1
 
         if num_failures > 0 and errexit:
@@ -370,7 +372,6 @@ def execpyfile(filename):
         code = compile(f.read(), filename, 'exec')
         exec(code, exec_globals, None)
 
-
 def silentremove(filename):
     try:
         os.remove(filename)
@@ -383,18 +384,18 @@ def clean():
         test.cleanup()
 
 def list_tests():
-    if not ALL_TESTS:
-        sys.stdout.write('No tests found\n')
-    else:
+    if ALL_TESTS:
         sys.stdout.write('Available tests:\n')
         l = max([len(t.suite) for t in ALL_TESTS]) + 1
 
-        sys.stdout.write('%-*s Name\n' % (l, "Suite"))
+        sys.stdout.write('%-*s Name\n' % (l, 'Suite'))
         sys.stdout.write('%s\n' % ('-' * (l + 5)))
 
         for test in ALL_TESTS:
             sys.stdout.write('%-*s %s\n' % (l, test.suite, test.name))
         sys.stdout.flush()
+    else:
+        sys.stdout.write('No tests found\n')
 
 def filter_tests(keywords, getter):
     global ALL_TESTS
@@ -440,7 +441,7 @@ def main():
 
     parser.add_option('-g', '--generate',
                       action='store_true', dest='generate', default=False,
-                      help='Run the defined test cases commands and generate ' +
+                      help='Run the defined test case commands and generate ' +
                             'the output files. Use with care, this overwrites ' +
                             'existing output files')
 
