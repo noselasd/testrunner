@@ -323,7 +323,6 @@ def run_tests(log, verbose=False, errexit=False):
     num_tests = 0
     num_failures = 0
     current_suite = None
-    print "errexit", errexit
 
     log.begin()
 
