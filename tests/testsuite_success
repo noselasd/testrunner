@@ -1,4 +1,13 @@
+# Run the 'true' shell command. Has no output, and always exits with success
 DefTest('true', 'true_test')
+
+# Test sleeping for 2 seconds
 DefTest('sleep 2', 'sleep_test')
-DefTest('echo Hello World', 'hello_test')
+
+# Run the ./hello_test_cmd program. Its output should match the content of the
+# file ./hello_test.stdout
+DefTest('./hello_test_cmd', 'hello_test')
+
+# Exit with exit code 10, which we consider a successful
+# exit code
 DefTest('exit 10', 'success_exit_test', success_codes=[10])

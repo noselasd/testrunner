@@ -1,9 +1,24 @@
 DefSuite('Common tests')
 
+# Run the false shell command, which exits with exit code 1,
+# which is considered a failure
 DefTest('false', 'false_test')
+
+# Sleep for 10 seconds, which will not complete within the specified
+# timeout of 1 seconds, and therefore fail
 DefTest('sleep 10', 'sleep_timeout_test', timeout=1)
+
+# Output of this echo command will not match the content
+# of the file ./there_test.stdout
 DefTest('echo Hello There', 'there_test' )
 
 DefSuite('Special tests')
+
+# Echo to stderr. The stderr_test.stderr file does not exist, and 
+# this is treated as if the file did exist but was empty, which 
+# means the actual output differs from the desired output
 DefTest('>&2 echo Hello stderr', 'stderr_test' )
+
+# Terminate with exit code 10, which will be considered a failure
 DefTest('exit 10', 'err_exit_test' )
+
