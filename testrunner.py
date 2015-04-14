@@ -7,10 +7,12 @@ import optparse
 import datetime
 import inspect
 import threading
+from xml.sax.saxutils import XMLGenerator
+from xml.sax.xmlreader import AttributesImpl
 
 VERSION = '0.0.1'
 ALL_TESTS = []
-LOGFILE = 'testsuite.log'
+LOGFILE = None
 CURRENT_SUITE = 'default'
 
 #See README for detailed info
@@ -180,6 +182,80 @@ class TextLog(object):
         else:
             self.out.write('All %d tests passed\n' % num_tests)
 
+        self.out.close()
+
+class XMLLog(object):
+
+    def __init__(self, logfile_name):
+        self.out = open(logfile_name, 'w')
+        self.logfile_name = logfile_name
+        self.xml_doc = XMLGenerator(self.out, 'utf-8')
+        self.suite_started = False
+
+    def begin(self):
+        self.xml_doc.startDocument()
+        self.xml_doc.startElement('testsuites',AttributesImpl({}))
+        self.xml_doc.characters('\n')
+        self.xml_doc.startElement('invocation',AttributesImpl({}))
+        self.xml_doc.characters(' '.join(sys.argv))
+        self.xml_doc.endElement('invocation')
+        self.xml_doc.characters('\n')
+
+    def start_suite(self, suite):
+        if self.suite_started:
+            self.xml_doc.endElement('testsuite')
+            self.xml_doc.characters('\n')
+
+        self.suite_started = True
+
+        attrs = AttributesImpl({'name': suite})
+        self.xml_doc.startElement('testsuite', attrs)
+        self.xml_doc.characters('\n')
+
+    def start_test(self, test):
+        attrs = AttributesImpl({'name': test.name})
+        self.xml_doc.startElement('testcase', attrs)
+        self.xml_doc.characters('\n')
+
+    def end_test(self, test):
+        attrs = AttributesImpl({})
+        self.xml_doc.startElement('result', attrs)
+        self.xml_doc.characters(str(test.result))
+        self.xml_doc.endElement('result')
+        self.xml_doc.characters('\n')
+
+        if test.errors:
+            self.xml_doc.startElement('errors', attrs)
+            self.xml_doc.characters('\n')
+            for err in test.errors:
+                self.xml_doc.startElement('error', attrs)
+                self.xml_doc.characters(str(err))
+                self.xml_doc.endElement('error')
+                self.xml_doc.characters('\n')
+
+            self.xml_doc.endElement('errors')
+
+        self.xml_doc.endElement('testcase')
+        self.xml_doc.characters('\n')
+
+    def end(self, num_tests, num_failures):
+
+        if self.suite_started:
+            self.xml_doc.endElement('testsuite')
+            self.xml_doc.characters('\n')
+
+        attrs = AttributesImpl({'tests': str(num_tests), 
+                                'failures': str(num_failures)})
+        self.xml_doc.startElement('result', attrs)
+        if num_failures:
+            self.xml_doc.characters(str(TestResult.FAIL()))
+        else:
+            self.xml_doc.characters(str(TestResult.PASS()))
+        self.xml_doc.endElement('result')
+
+        self.xml_doc.endElement('testsuites')
+        self.xml_doc.characters('\n')
+        self.xml_doc.endDocument()
         self.out.close()
 
 class TestCase(object):
@@ -442,6 +518,9 @@ def main():
                       action='append', dest='suite', default=[],
                       help='Run only test suites matching the given suite. ' +
                            'SUITE is a regexp. Can be given multiple times.')
+    parser.add_option('--xml',
+                      action='store_true', dest='xml', default=False,
+                      help='Write the logfile in XML format')
 
     parser.add_option('-g', '--generate',
                       action='store_true', dest='generate', default=False,
@@ -455,10 +534,15 @@ def main():
         parser.print_help()
         return 1
 
-    if options.logfile:
-        global LOGFILE
-        LOGFILE = options.logfile
+    global LOGFILE
+    if options.xml:
+        LOGFILE='testsuite.xml'
+    else:
+        LOGFILE='testsuite.log'
 
+    if options.logfile:
+        LOGFILE = options.logfile
+    
     for testfile in args:
         execpyfile(testfile)
 
@@ -486,7 +570,11 @@ def main():
         ok = generate_test_files(errexit=options.errexit)
     else:
         log = MultiDelegate()
-        log.delegates.append(TextLog(LOGFILE, options.verbose))
+        if options.xml:
+            log.delegates.append(XMLLog(LOGFILE))
+        else:
+            log.delegates.append(TextLog(LOGFILE, options.verbose))
+
         log.delegates.append(TerminalLog(verbose=options.verbose))
         (total, failed) = run_tests(log, errexit=options.errexit)
         ok = failed == 0
