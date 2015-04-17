@@ -18,9 +18,9 @@ void test_empty_tree(void)
     void *data;
     
     data = num_trie_prefix_lookup(&trie, "1234");
-    printf("%s data: %p\n", __func__, data);
+    printf("data: %s\n",  data ? data : "null");
     data = num_trie_prefix_lookup(&trie, "");
-    printf("%s data: %p\n", __func__, data);
+    printf("data: %s\n",  data ? data : "null");
 }
 
 void test_insert_null(void)
@@ -90,14 +90,17 @@ void test_lookup(void)
     printf("4: %s\n", (const char *)num_trie_prefix_lookup(&trie, "1234"));
     printf("5: %s\n", (const char *)num_trie_prefix_lookup(&trie, "123456"));
     printf("6: %s\n", (const char *)num_trie_prefix_lookup(&trie, "1234567"));
-    printf("7: %s\n", (const char *)num_trie_prefix_lookup(&trie, "2"));
+    p = num_trie_prefix_lookup(&trie, "2");
+    printf("7: %s\n", p ? p : "null");
     printf("8: %s\n", (const char *)num_trie_prefix_lookup(&trie, "422"));
     printf("9: %s\n", (const char *)num_trie_prefix_lookup(&trie, "4"));
     printf("11: %s\n", (const char *)num_trie_prefix_lookup_keys(&trie, "4","2","2", NULL));
     printf("12: %s\n", (const char *)num_trie_prefix_lookup_keys(&trie, "4","2","2", "3", NULL));
     printf("12: %s\n", (const char *)num_trie_prefix_lookup_keys(&trie, "4","2","2", "3", NULL));
-    printf("13: %s\n", (const char *)num_trie_prefix_lookup_keys(&trie,  "", NULL));
-    printf("14: %s\n", (const char *)num_trie_prefix_lookup(&trie,  ""));
+    p = num_trie_prefix_lookup_keys(&trie,  "", NULL);
+    printf("13: %s\n", p ? p : "null");
+    p = num_trie_prefix_lookup(&trie,  "");
+    printf("14: %s\n", p ? p : "null");
 }
 
 void test_invalid(void)
