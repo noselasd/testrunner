@@ -1,0 +1,20 @@
+This is a simple toy project to demonstrate testrunner.py
+Run
+
+    make check
+
+to compile the code and run the test suite for the project.
+
+lib/ contains code for a specialized trie data structire
+src/ is the main program using this library
+
+tests/test_api/ contains a small test program that exercides the 
+trie library.
+
+tests/testsuite contains the tests to be run. 
+The tests runs the main program itself to test the finished program, 
+as well as the tests/test_api/test_api program to test the code for
+the trie.
+
+tests/Makefile is responsible for running testrunner.py
+

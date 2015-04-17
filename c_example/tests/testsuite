@@ -1,0 +1,8 @@
+DefSuite('API tests')
+DefTest('test_api/test_api', 'test_api')
+
+DefSuite('Program test')
+DefTest('../src/main test_program_1.cfg ""', 'empty_lookup')
+DefTest('../src/main test_program_1.cfg "1234"', 'exact_lookup')
+DefTest('../src/main test_program_1.cfg "12345678"', 'deep_lookup')
+

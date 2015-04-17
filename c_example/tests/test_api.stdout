@@ -1,0 +1,27 @@
+RUNNING test_insert_null
+num_elements 0
+num_elements 0
+RUNNING test_empty_tree
+test_empty_tree data: (nil)
+test_empty_tree data: (nil)
+RUNNING test_insert_duplicate
+num_elements 1
+p: first
+num_elements 1
+RUNNING test_lookup
+1: first
+2: second
+3: second
+4: second
+5: third
+6: third
+7: (null)
+8: fourth
+9: fifth
+11: fourth
+12: fourth
+12: fourth
+13: (null)
+14: (null)
+RUNNING test_invalid
+num_elements 0
