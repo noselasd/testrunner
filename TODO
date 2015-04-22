@@ -1,9 +1,8 @@
-* Add XML and/or Json output
+* Json output
 * Clean up code
 * Be able to run tests in parallell
-* Add the C example test code
-* Optionally Specify verbatim text to compare against for DefTest()
-  instead of using files 
+* Optionally Specify text to compare against directly 
+  in DefTest() instead of using .stdin/.stderr files 
 
 Non-todos:
 * Replace code using cleaner but newer Python features.
