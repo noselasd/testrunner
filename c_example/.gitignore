@@ -1,0 +1,4 @@
+build
+lib*a
+src/main
+tests/test_api/test_api
