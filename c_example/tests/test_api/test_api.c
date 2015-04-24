@@ -18,9 +18,9 @@ void test_empty_tree(void)
     void *data;
     
     data = num_trie_prefix_lookup(&trie, "1234");
-    printf("data: %s\n",  data ? data : "null");
+    printf("data: %s\n",  data ? (const char*)data : "null");
     data = num_trie_prefix_lookup(&trie, "");
-    printf("data: %s\n",  data ? data : "null");
+    printf("data: %s\n",  data ? (const char*)data : "null");
 }
 
 void test_insert_null(void)
