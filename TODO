@@ -3,6 +3,8 @@
 * Be able to run tests in parallell
 * Optionally Specify text to compare against directly 
   in DefTest() instead of using .stdin/.stderr files 
+* improve setup.py. use asciidoc/a2x to convert README
+  to a manpage
 
 Non-todos:
 * Replace code using cleaner but newer Python features.

@@ -1,6 +1,7 @@
 testrunner(1)
 ============
-:doctype manpage
+Nils Olav Selåsdal
+
 
 NAME
 ----
@@ -131,16 +132,18 @@ In our hello_test case, the hello_test.stdout would contain the text
 As that is what we expect the test to output. hello_test.stderr can be omitted
 as we do not expect it to produce any output on stderr.
 
+GROUPING TESTS
+--------------
 The tests are also grouped in suites, and testrunner(1) can be instructed to
-only run a certain suite. If no test suites are defined, all test cases will
-belong to the test suite named 'default'.
+only run certain suites with the *-s* flag. If no test suites are defined, 
+all test cases will belong to the test suite named 'default'.
 
 A test suite can be defined with the syntax:
     
     DefSuite('suite_name')
 
 **suite_name** is the name of the new suite. All the following test cases
-defined with the 'DefTest()' command will belong to this new test suite, until
+defined with the 'DefTest()' command will belong to this new suite, until
 another 'DefSuite()' command is issued.
 
 MORE TEST CASE OPTIONS
@@ -192,14 +195,29 @@ from the same directory as the testsuite files.
 
 EXAMPLES
 --------
+Run test definitions in the testsuite_foo file, that starts with the name xyz,
+stop on the first failing test:
+    
+    testrunner.py -k ^xyz -e testsuite_foo
+
+List test definitions in the testsuite_foo file that contains foobar in the
+test name. This can be useful to check which tests matches the *-k* or *-s*
+arguments that's given:
+
+    testrunner.py -k foobar -l testsuite_foo
+
 See the tests/ directory for some simple examples. These tests
 can be run with:
 
-    ./testrunner.py tests/testsuite_failures tests/testsuite_success
+    testrunner.py tests/testsuite_failures tests/testsuite_success
 
 In the c_example/ directory is a small C code project that uses testrunner(1)
 for testing. These tests can be compiled and run with:
 
     cd c_example && make check
 
+LICENSE
+-------
+This software is licensed under the MIT license, a copy of the license is found
+in the LICENSE file.
 
