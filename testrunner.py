@@ -108,8 +108,9 @@ class TerminalLog(object):
     def begin(self):
         self.out.write(
 '''## Testsuite started
+## Invocation: %s
 ## Time: %s
-''' % (str(datetime.datetime.now())))
+''' % (''.join(sys.argv), str(datetime.datetime.now())))
 
     def start_suite(self, suite):
         self.out.write('\n## Running testsuite: %s\n' % suite)
