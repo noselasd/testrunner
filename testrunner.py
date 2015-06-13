@@ -94,9 +94,10 @@ class TerminalLog(object):
     RED   = '\033[91m'
     ENDC  = '\033[0m'
 
-    def __init__(self, out = sys.stdout, verbose=False):
+    def __init__(self, out = sys.stdout, verbose=False, show_command=False):
         self.out = out
         self.verbose = verbose
+        self.show_command = show_command
         self.colorize = out.isatty()
 
     def maybe_color(self, s, color):
@@ -117,19 +118,25 @@ class TerminalLog(object):
         self.out.flush()
 
     def start_test(self, test):
+
+        if self.show_command:
+            self.out.write('  Command: %s\n' % test.cmd)
         self.out.write('  %-70s' % test.name)
         self.out.flush()
 
     def end_test(self, test):
         if test.result == TestResult.PASS():
-            s = self.maybe_color(str(test.result), self.GREEN)
+            msg = self.maybe_color(str(test.result), self.GREEN)
         elif test.result == TestResult.NOTRUN():
-            s = str(test.result)
+           msg = str(test.result)
         else:
-            s = self.maybe_color(str(test.result), self.RED)
+           msg = self.maybe_color(str(test.result), self.RED)
 
-        self.out.write('%s\n' % s)
+        self.out.write('%s\n' % msg)
         if self.verbose:
+            # might already shown the command
+            if test.errors:
+                self.out.write('Failed command: %s\n' % test.cmd)
             for err in test.errors:
                 self.out.write('\n%s\n\n' % err)
 
@@ -143,6 +150,9 @@ class TerminalLog(object):
         else:
             self.out.write(self.maybe_color('All %d tests passed\n' %
                                          num_tests, self.GREEN))
+        if LOGFILE:
+            self.out.write('View complete log in the %s file.\n' % (LOGFILE))
+
         self.out.flush()
 
 class TextLog(object):
@@ -493,7 +503,10 @@ def main():
                                    version=VERSION)
     parser.add_option('-v', '--verbose',
                       action='store_true', dest='verbose', default=False,
-                      help='Verbose output')
+                      help='Verbose output, shows diffs on failed testcases')
+    parser.add_option('-C', '--show-command',
+                      action='store_true', dest='show_command', default=False,
+                      help='Show the command being run for each test.')
     parser.add_option('-x', '--exit_success',
                       action='store_true', dest='exit_success', default=False,
                       help='Always exit with exit code 0. '+
@@ -576,7 +589,8 @@ def main():
         else:
             log.delegates.append(TextLog(LOGFILE, options.verbose))
 
-        log.delegates.append(TerminalLog(verbose=options.verbose))
+        log.delegates.append(TerminalLog(verbose=options.verbose, 
+                                         show_command=options.show_command))
         (total, failed) = run_tests(log, errexit=options.errexit)
         ok = failed == 0
 
