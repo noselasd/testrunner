@@ -459,7 +459,8 @@ def generate_test_files(errexit=False):
 
 def execpyfile(filename, defines):
     with open(filename) as f:
-        exec_globals = {'DefTest': DefTest, 'DefSuite': DefSuite}
+        exec_globals = defines.copy()
+        exec_globals.update({'DefTest': DefTest, 'DefSuite': DefSuite})
         exec_globals.update(defines)
         code = compile(f.read(), filename, 'exec')
         exec(code, exec_globals, None)
