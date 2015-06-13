@@ -28,6 +28,9 @@ OPTIONS
     This is indtended to be used in a build system, e.g. as part of a 'clean'
     target.
 
+*-C,--show-command
+    Show the command being run for each test.
+
 *-e,--errexit*
     Terminate on the first test that fails
 
@@ -45,6 +48,10 @@ OPTIONS
 
 *-l,--list*
     List all the test cases present in the given testsuite definition files.
+
+-D DEFINE,--define=DEFINE
+    Define a variable available to the  test files. The variable is defined 
+    with the form name=value.
 
 *-g, --generate*
     Run the defined test case commands and generate the output files. Use 
@@ -96,7 +103,7 @@ stdout, leaving no output on its stderr, such that the corresponding
 
 The testsuite files are run as Python code, so the full python programming
 environment is available in the testsuite files. However little to no  
-Python programming knowledgr is needed to define test cases.
+Python programming knowledge is needed to define test cases.
 
 In the testsuite files a test case is defined with the syntax of:
 
@@ -131,6 +138,11 @@ In our hello_test case, the hello_test.stdout would contain the text
 
 As that is what we expect the test to output. hello_test.stderr can be omitted
 as we do not expect it to produce any output on stderr.
+
+The testrunner can also take arguments that define Python variables that will
+be available as global variables in the testsuite files. With a -Dfoo=bar
+command line argument to the testrunner, the variable **foo** will be available
+with the value **bar**.
 
 GROUPING TESTS
 --------------

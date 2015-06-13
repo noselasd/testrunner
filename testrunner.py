@@ -457,9 +457,10 @@ def generate_test_files(errexit=False):
 
     return num_failures == 0
 
-def execpyfile(filename):
+def execpyfile(filename, defines):
     with open(filename) as f:
         exec_globals = {'DefTest': DefTest, 'DefSuite': DefSuite}
+        exec_globals.update(defines)
         code = compile(f.read(), filename, 'exec')
         exec(code, exec_globals, None)
 
@@ -498,6 +499,17 @@ def filter_tests(keywords, getter):
 
     ALL_TESTS = filtered_tests
 
+def parse_defines(defines):
+    defines_dict = {}
+    for d in defines:
+        (var, sep, value) = d.partition('=') 
+        if not sep:
+            sys.stdout.write("Error define '%s' is not on the form name=value\n" % d)
+            sys.exit(1)
+        defines_dict[var] = value
+
+    return defines_dict
+
 def main():
     parser = optparse.OptionParser(usage='usage: %prog [options] test1 ...',
                                    version=VERSION)
@@ -535,7 +547,11 @@ def main():
     parser.add_option('--xml',
                       action='store_true', dest='xml', default=False,
                       help='Write the logfile in XML format')
-
+    parser.add_option('-D', '--define',
+                      action='append', dest='define', default=[],
+                      help='Define a variable available to the  test files.' +
+                           'The variable is defined with the form name=value.' +
+                           'Can be given multiple times')
     parser.add_option('-g', '--generate',
                       action='store_true', dest='generate', default=False,
                       help='Run the defined test case commands and generate ' +
@@ -556,9 +572,10 @@ def main():
 
     if options.logfile:
         LOGFILE = options.logfile
-    
+
+    defines = parse_defines(options.define)
     for testfile in args:
-        execpyfile(testfile)
+        execpyfile(testfile, defines)
 
     if options.keyword:
         filter_tests(options.keyword, lambda t: t.name)
