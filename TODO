@@ -5,10 +5,15 @@
   in DefTest() instead of using .stdin/.stderr files 
 * improve setup.py. use asciidoc/a2x to convert README
   to a manpage
+* conform to an existing XML schema for testing frameworks 
+  in the XML output
 
 Non-todos:
 * Replace code using cleaner but newer Python features.
   The testrunner needs to run on the default python package
   shipped with RHEL/CentOS 6 and up.
+* Modularize the python code into several files/packages.
+  Having the single testrunner.py makes it easier to integrate
+  in existing build infrastructure.
 
 
