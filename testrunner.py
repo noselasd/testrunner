@@ -177,6 +177,8 @@ class TextLog(object):
         self.out.write('## Command: %s\n' % test.cmd)
 
     def end_test(self, test):
+        duration = (test.end_time - test.start_time).total_seconds()
+        self.out.write('## Duration: %f sec.\n' % duration)
         self.out.write('## Result: %s\n' % test.result)
 
         if test.errors:
@@ -229,6 +231,12 @@ class XMLLog(object):
         self.xml_doc.characters('\n')
 
     def end_test(self, test):
+        duration = (test.end_time - test.start_time).total_seconds()
+        self.xml_doc.startElement('duration',AttributesImpl({}))
+        self.xml_doc.characters(str(duration))
+        self.xml_doc.endElement('duration')
+        self.xml_doc.characters('\n')
+
         attrs = AttributesImpl({})
         self.xml_doc.startElement('result', attrs)
         self.xml_doc.characters(str(test.result))
@@ -280,6 +288,8 @@ class TestCase(object):
         self.timeout       = timeout
         self.result        = TestResult.NOTRUN()
         self.errors        = []
+        self.start_time    = 0
+        self.end_time      = 0
 
         self.stdout_run_name = os.path.join(self.cwd,name + '.stdout-actual')
         self.stderr_run_name = os.path.join(self.cwd,name + '.stderr-actual')
@@ -310,11 +320,15 @@ class TestCase(object):
 
     def run_test(self):
         timedout = False
+
+        self.start_time = datetime.datetime.now()
         (timedout, exitcode) = execute_program(self.stdout_run_name,
                                                self.stderr_run_name,
                                                self.cwd,
                                                self.cmd,
                                                self.timeout)
+        self.end_time = datetime.datetime.now()
+
         self.result = TestResult.PASS()
 
         if timedout:
