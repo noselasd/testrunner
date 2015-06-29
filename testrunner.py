@@ -177,7 +177,7 @@ class TextLog(object):
         self.out.write('## Command: %s\n' % test.cmd)
 
     def end_test(self, test):
-        duration = (test.end_time - test.start_time).total_seconds()
+        duration = timedelta_total_seconds(test.end_time - test.start_time)
         self.out.write('## Duration: %f sec.\n' % duration)
         self.out.write('## Result: %s\n' % test.result)
 
@@ -231,7 +231,7 @@ class XMLLog(object):
         self.xml_doc.characters('\n')
 
     def end_test(self, test):
-        duration = (test.end_time - test.start_time).total_seconds()
+        duration = timedelta_total_seconds(test.end_time - test.start_time)
         self.xml_doc.startElement('duration',AttributesImpl({}))
         self.xml_doc.characters(str(duration))
         self.xml_doc.endElement('duration')
@@ -470,6 +470,11 @@ def generate_test_files(errexit=False):
             break
 
     return num_failures == 0
+
+def timedelta_total_seconds(t):
+	"""Total seconds in the duration.
+Needed since timedelta.total_seconds() doesn't exist in Python 2.6"""
+        return ((t.days * 86400.0 + t.seconds)*10.0**6 + t.microseconds) / 10.0**6 
 
 def execpyfile(filename, defines):
     with open(filename) as f:
