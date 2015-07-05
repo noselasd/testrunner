@@ -367,8 +367,8 @@ class TestCase(object):
         self.cleanup()
 
     def generate(self):
-        execute_program(self.stdout_run_name,
-                        self.stderr_run_name,
+        execute_program(self.stdout_name,
+                        self.stderr_name,
                         self.cwd,
                         self.cmd,
                         self.timeout)
