@@ -585,13 +585,12 @@ def main():
         return 1
 
     global LOGFILE
-    if options.xml:
+    if options.logfile:
+        LOGFILE = options.logfile
+    elif options.xml:
         LOGFILE='testsuite.xml'
     else:
         LOGFILE='testsuite.log'
-
-    if options.logfile:
-        LOGFILE = options.logfile
 
     defines = parse_defines(options.define)
     for testfile in args:
