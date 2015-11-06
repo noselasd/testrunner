@@ -7,6 +7,7 @@
   to a manpage
 * conform to an existing XML schema for testing frameworks 
   in the XML output
+* Test suite for testrunner.py itself. 
 
 Non-todos:
 * Replace code using cleaner but newer Python features.

@@ -176,6 +176,7 @@ alltogether when determining if the test case fails or succeeds.
 
 **timeout** is the max time in seconds the test case can run. If this timeout 
 is reached, the command will be killed and the test case is marked as failed.
+Note that the default timeout for a test is 30 seconds.
 
 GENERATING INITIAL OUTPUT FILES
 -------------------------------
