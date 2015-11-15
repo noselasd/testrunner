@@ -12,4 +12,4 @@ testrunner.1: README
 
 .PHONY: clean
 clean:
-	rm -f testrunner.1
+	rm -f testrunner.1 setup.xml
