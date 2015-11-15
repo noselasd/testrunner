@@ -198,13 +198,13 @@ FILE LOCATIONS
 --------------
 The files used by testrunner(1) are
 
-* The testsuite files containing test case 
-* The command to be run
+* The testsuite files containing test case. 
+* The command specified in a test case that is executed.
 * The .stdout and .stderr files for each test case.
 
-The command is being run with the same working directory as the testsuite
-files, and the matching .stdout/.stderr files for each test case are read
-from the same directory as the testsuite files.
+The test case commands are being run with working directory set to the location
+of the testsuite file it is specified in, and the matching .stdout/.stderr files
+for each test case are read from the same directory as the testsuite files.
 
 EXAMPLES
 --------
@@ -233,4 +233,8 @@ LICENSE
 -------
 This software is licensed under the MIT license, a copy of the license is found
 in the LICENSE file.
+
+SEE ALSO
+--------
+Source code: http://github.com/noselasd/testrunner/
 
