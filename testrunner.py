@@ -10,7 +10,7 @@ import threading
 from xml.sax.saxutils import XMLGenerator
 from xml.sax.xmlreader import AttributesImpl
 
-VERSION = '0.0.1'
+VERSION = '1.0.0'
 ALL_TESTS = []
 LOGFILE = None
 CURRENT_SUITE = 'default'
