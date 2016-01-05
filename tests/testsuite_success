@@ -11,3 +11,7 @@ DefTest('./hello_test_cmd', 'hello_test')
 # Exit with exit code 10, which we consider a successful
 # exit code
 DefTest('exit 10', 'success_exit_test', success_codes=[10])
+
+# Check output on stderr
+# file ./hello_test.stdout
+DefTest('1>&2 echo This is stderr', 'stderr_output')
