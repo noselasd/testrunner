@@ -21,14 +21,14 @@ OPTIONS
 *-x,--exit_success*
     Make the testrunner(1) command always exit with success (exit code 0).
     Otherwise testrunner(1) exits with success if all the tests passes or
-    exit with an error if any of the tests fails.
+    exits with an error if any of the tests fails.
 
 *-c.--clean*
     Clean any output artifacts left by the tests. The tests are not executed.
-    This is indtended to be used in a build system, e.g. as part of a 'clean'
+    This is intended to be used in a build system, e.g. as part of a 'clean'
     target.
 
-*-C,--show-command
+*-C,--show-command*
     Show the command being run for each test.
 
 *-e,--errexit*
@@ -49,9 +49,9 @@ OPTIONS
 *-l,--list*
     List all the test cases present in the given testsuite definition files.
 
--D DEFINE,--define=DEFINE
+*-D DEFINE,--define=DEFINE*
     Define a variable available to the  test files. The variable is defined 
-    with the form name=value.
+    with the form name=value. This flag can be given multiple times.
 
 *-g, --generate*
     Run the defined test case commands and generate the output files. Use 
@@ -79,7 +79,7 @@ While testrunner(1) was written to test C and C++ code, code written in
 any language can be tested as long as the tests can be executed as normal 
 executables/commands and they write output to stdout or stderr.
 
-The following criterias are used to fail or pass a test:
+The following criteria are used to fail or pass a test:
 
 * Whether stdout of the executable matches the desired stdout output
 * Whether stderr of the executable matches the desired stderr output
@@ -91,7 +91,7 @@ The following criterias are used to fail or pass a test:
 
 DEFINING TEST CASES
 -------------------
-Testcases are loaded from seperate testsuite files given as arguments to
+Test cases are loaded from separate testsuite files given as arguments to
 testrunner(1). Several test cases can be defined in each testsuite file.
 
 The output of the command from each test case will be compared with two 
@@ -115,11 +115,11 @@ syntax is available. However do note that only the exit status of the last
 command, if e.g. a pipeline is used as a command, is used for reporting back
 the exit status to testrunner(1)
 
-**test_name** is the name of the test, used in test reports and for the filenames
-of the desired output. As the test_name also names filenames, it's desirable
-if it does not contain spaces, directory separator or other characthers that
+**test_name** is the name of the test, used in test reports and for the file names
+of the desired output. As the test_name also names file names, it's desirable
+if it does not contain spaces, directory separator or other characters that
 makes file handling difficult. The test_name must be unique within all the
-testsuites being run.
+test suites being run.
 
 e.g
 
@@ -172,7 +172,7 @@ an exit code of 0, the test will be marked as failed. If e.g. an exit
 code of either 0 or 1 should indicate success, pass in 'success_codes=[0,1]'
 
 If an empty list, 'success_codes=[]', is given, the exit code will be ignored
-alltogether when determining if the test case fails or succeeds.
+all together when determining if the test case fails or succeeds.
 
 **timeout** is the max time in seconds the test case can run. If this timeout 
 is reached, the command will be killed and the test case is marked as failed.
@@ -185,7 +185,7 @@ in the test cases and create the .stdout/.stderr files. This can be used to
 create the initial comparison files instead of generating them by hand and
 can be helpful to re-generate the files when the test programs change.
 
-The file generation mode is used when the -g or --generate flag is specifed.
+The file generation mode is used when the -g or --generate flag is specified.
 The flags for filtering tests or suites can be given to run only specific
 test commands. 
 
