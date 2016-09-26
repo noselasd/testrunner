@@ -14,7 +14,7 @@ VERSION = '1.0.0'
 ALL_TESTS = []
 LOGFILE = None
 CURRENT_SUITE = 'default'
-
+DEFAULT_TEST_TIMEOUT = 30
 #See README for detailed info
 
 #Start a new test suite
@@ -23,13 +23,17 @@ def DefSuite(suite):
     CURRENT_SUITE = suite
 
 #Define a test - to be called in the testsuite files
-def DefTest(cmd, name, success_codes=None, timeout=30):
+def DefTest(cmd, name, success_codes=None, timeout=None):
 
     if success_codes is None:
         success_codes = [0]
 
+
     if name in set(t.name for t in ALL_TESTS):
         raise NameError('The test name ''%s'' is already defined' % name)
+
+    if not timeout:
+        timeout = int(DEFAULT_TEST_TIMEOUT)
 
     #Figure out the file and line where the test is defined
     frame = inspect.stack()[1]
@@ -531,6 +535,7 @@ def parse_defines(defines):
     return defines_dict
 
 def main():
+    global DEFAULT_TEST_TIMEOUT
     parser = optparse.OptionParser(usage='usage: %prog [options] test1 ...',
                                    version=VERSION)
     parser.add_option('-v', '--verbose',
@@ -577,6 +582,10 @@ def main():
                       help='Run the defined test case commands and generate ' +
                             'the output files. Use with care, this overwrites ' +
                             'existing output files')
+    parser.add_option('-t', '--timeout',
+                      action='store', dest='timeout', default=None,
+                      help='Override default individual test timeout in seconds. ' +
+                            'Does not affect tests that explicitly defined a timeout')
 
     (options, args) =  parser.parse_args()
     if not args:
@@ -591,6 +600,9 @@ def main():
         LOGFILE='testsuite.xml'
     else:
         LOGFILE='testsuite.log'
+
+    if options.timeout:
+        DEFAULT_TEST_TIMEOUT = options.timeout
 
     defines = parse_defines(options.define)
     for testfile in args:

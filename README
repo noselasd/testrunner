@@ -57,6 +57,11 @@ OPTIONS
     Run the defined test case commands and generate the output files. Use 
     with care, this overwritesexisting output files
 
+*-t, --timeout*
+    Override default individual test timeout in seconds.
+    Does not affect tests that explicitly defined a timeout.
+
+
 
 OVERVIEW
 --------
