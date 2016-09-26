@@ -476,9 +476,9 @@ def generate_test_files(errexit=False):
     return num_failures == 0
 
 def timedelta_total_seconds(t):
-	"""Total seconds in the duration.
+    """Total seconds in the duration.
 Needed since timedelta.total_seconds() doesn't exist in Python 2.6"""
-        return ((t.days * 86400.0 + t.seconds)*10.0**6 + t.microseconds) / 10.0**6 
+    return ((t.days * 86400.0 + t.seconds)*10.0**6 + t.microseconds) / 10.0**6 
 
 def execpyfile(filename, defines):
     with open(filename) as f:
