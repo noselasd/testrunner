@@ -519,7 +519,7 @@ def filter_tests(keywords, getter):
     filtered_tests = []
     for include in keywords:
         r = re.compile(include)
-        filtered_tests += [t for t in ALL_TESTS if r.search(getter(t))]
+        filtered_tests += [t for t in ALL_TESTS if r.search(getter(t)) and t not in filtered_tests]
 
     ALL_TESTS = filtered_tests
 
