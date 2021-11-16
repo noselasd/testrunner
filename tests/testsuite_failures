@@ -12,7 +12,7 @@ DefTest('sleep 10', 'sleep_timeout_test', timeout=1)
 # of the file ./there_test.stdout
 DefTest('echo Hello There', 'there_test' )
 
-DefSuite('Special tests')
+DefSuite('Special failing tests')
 
 # Echo to stderr. The stderr_test.stderr file does not exist, and 
 # this is treated as if the file did exist but was empty, which 

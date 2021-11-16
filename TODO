@@ -3,8 +3,6 @@
 * Be able to run tests in parallell
 * Optionally Specify text to compare against directly 
   in DefTest() instead of using .stdin/.stderr files 
-* improve setup.py. use asciidoc/a2x to convert README
-  to a manpage
 * conform to an existing XML schema for testing frameworks 
   in the XML output
 * Test suite for testrunner.py itself. 
