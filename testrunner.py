@@ -401,7 +401,7 @@ def execute_program(stdout_name, stderr_name, cwd, cmd, timeout):
 
 def wait_process(proc, timeout):
     proc_thread = threading.Thread(target=proc.communicate)
-    proc_thread.setDaemon(True)
+    proc_thread.daemon = True
     proc_thread.start()
     proc_thread.join(timeout=timeout)
 
